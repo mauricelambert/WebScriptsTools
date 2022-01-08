@@ -1,0 +1,11 @@
+LICENSE.txt
+MANIFEST.in
+README.md
+WebScriptsTools.py
+build_config.py
+setup.py
+test.py
+WebScriptsTools.egg-info/PKG-INFO
+WebScriptsTools.egg-info/SOURCES.txt
+WebScriptsTools.egg-info/dependency_links.txt
+WebScriptsTools.egg-info/top_level.txt
