@@ -4,17 +4,17 @@ from json import dump
 from sys import exit
 
 with open("config_TestWebScriptsTools.json", "w") as file:
-    dump({
-        "scripts": {
-            "TestWebScriptsTools": "config"
+    dump(
+        {
+            "scripts": {"TestWebScriptsTools": "config"},
+            "config": {
+                "launcher": "python3" if name != "nt" else "python",
+                "category": "Tests",
+                "path": join(getcwd(), "test.py"),
+            },
         },
-
-        "config": {
-            "launcher": "python3" if name != "nt" else "python",
-            "category": "Tests",
-            "path": join(getcwd(), "test.py"),
-        }
-    }, file)
+        file,
+    )
 
 print(
     "Move the config_TestWebScriptsTools.json file to a "

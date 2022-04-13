@@ -53,6 +53,8 @@ echo "INFO: print data using WebScripts data directory" > "${logfile}"
 
 from WebScriptsTools import *
 
+set_excepthook() # manage exceptions without printing sensible informations
+
 # Get the upload module, to read, delete or write a shared file
 upload = get_upload_module()
 upload.get_file("my_webscripts_shared_file.txt")

@@ -23,7 +23,7 @@
 This package implements tools for WebScripts Scripts.
 """
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -43,16 +43,27 @@ under certain conditions.
 __license__ = license
 __copyright__ = copyright
 
-__all__ = ["get_webscripts_data_path", "get_upload_module", "get_log_file", "get_user", "main"]
+__all__ = [
+    "get_webscripts_data_path",
+    "get_upload_module",
+    "set_excepthook",
+    "get_log_file",
+    "get_user",
+    "main",
+]
 
 from importlib.util import spec_from_file_location, module_from_spec
+from os.path import join, splitext, basename
+from contextlib import redirect_stdout
 from collections.abc import Callable
 from sys import exit, stderr, argv
-from os.path import join, splitext
 from os import environ, makedirs
+from types import TracebackType
 from types import ModuleType
+from sys import excepthook  # save default excepthook function
 from typing import Dict
 from json import loads
+import sys
 
 
 environ_get: Callable = environ.get
@@ -64,7 +75,13 @@ def get_upload_module() -> ModuleType:
     This function returns the WebScripts upload module.
     """
 
-    upload_path = join(environ_get("WEBSCRIPTS_PATH"), "scripts", "uploads", "modules", "uploads_management.py")
+    upload_path = join(
+        environ_get("WEBSCRIPTS_PATH"),
+        "scripts",
+        "uploads",
+        "modules",
+        "uploads_management.py",
+    )
     spec = spec_from_file_location("uploads", upload_path)
     upload = module_from_spec(spec)
     spec.loader.exec_module(upload)
@@ -79,6 +96,7 @@ def get_webscripts_data_path() -> str:
     """
 
     return join(environ_get("WEBSCRIPTS_PATH"), "data")
+
 
 def get_log_file() -> str:
 
@@ -109,6 +127,49 @@ def get_user() -> Dict[str, str]:
     return loads(environ_get("USER"))
 
 
+def print_exception(
+    exception_class: type, exception: Exception, traceback: TracebackType
+) -> None:
+
+    """
+    This function prints exception and exit without prints sensible
+    informations about the system and the code (file path, code, ect...).
+    """
+
+    try:
+        function = getattr(exception, "function_name", None)
+        text = repr(exception) + (
+            f" from:{function!r}" if function is not None else ""
+        )
+
+        with redirect_stdout(stderr):
+            cause: Exception = exception.__cause__
+            while cause:
+                function = getattr(cause, "function_name", None)
+                text = (
+                    f"{cause!r}"
+                    f"{f' from:{function!r}' if function is not None else ''}"
+                    f"[{text}]"
+                )
+                cause = cause.__cause__
+
+            filename = basename(traceback.tb_frame.f_code.co_filename)
+            print(f"{filename!r}:{traceback.tb_lineno!r} -> {text}")
+
+    finally:
+        exit(getattr(exception, "exit_code", 127))
+
+
+def set_excepthook() -> None:
+
+    """
+    This function sets sys.excepthook to secure
+    sensible informations on python errors.
+    """
+
+    sys.excepthook = print_exception
+
+
 def main() -> int:
 
     """
@@ -121,15 +182,13 @@ def main() -> int:
     if len(argv) != 2 or argv[1] not in functions:
         print(
             f"USAGES: {argv[0]} <tool>\n"
-            "\tAvailable tools are:\n\t - " +
-            "\n\t - ".join(
-                functions
-            )
+            "\tAvailable tools are:\n\t - " + "\n\t - ".join(functions)
         )
         return 1
 
     print(globals()[argv[1]]())
     return 0
+
 
 if __name__ == "__main__":
     # print(copyright)
