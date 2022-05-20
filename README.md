@@ -30,6 +30,7 @@ pip install WebScriptsTools
 
 python3 -m WebScriptsTools
 python3 -m WebScriptsTools get_log_file
+python3 -m WebScriptsTools get_upload_script
 python3 -m WebScriptsTools get_webscripts_data_path
 ```
 
@@ -44,6 +45,8 @@ logfile=$(python3 -m WebScriptsTools get_log_file)
 echo "DEBUG: Get log file from WebScriptsTools" > "${logfile}"
 cat "$(python3 -m WebScriptsTools get_webscripts_data_path)/datafile.txt"
 echo "INFO: print data using WebScripts data directory" > "${logfile}"
+cat myfile.txt | "$(python3 -m WebScriptsTools get_upload_script)" uploaded_filename.txt
+cat myfile.txt | "$(python3 -m WebScriptsTools get_upload_script)" -r 1000 -w 1000 -d 1000 -H -b -c -i uploaded_filename.txt
 ```
 
 ### Python script

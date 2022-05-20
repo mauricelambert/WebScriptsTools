@@ -23,7 +23,7 @@
 This package implements tools for WebScripts Scripts.
 """
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -46,6 +46,7 @@ __copyright__ = copyright
 __all__ = [
     "get_webscripts_data_path",
     "get_upload_module",
+    "get_upload_script",
     "set_excepthook",
     "get_log_file",
     "get_user",
@@ -170,6 +171,22 @@ def set_excepthook() -> None:
     sys.excepthook = print_exception
 
 
+def get_upload_script() -> None:
+
+    """
+    This function prints the upload script path.
+    """
+
+    print(
+        join(
+            environ_get("WEBSCRIPTS_PATH"),
+            "scripts",
+            "uploads",
+            "upload_file.py",
+        )
+    )
+
+
 def main() -> int:
 
     """
@@ -177,7 +194,11 @@ def main() -> int:
     tools from the command line.
     """
 
-    functions = ("get_log_file", "get_webscripts_data_path")
+    functions = (
+        "get_log_file",
+        "get_webscripts_data_path",
+        "get_upload_script",
+    )
 
     if len(argv) != 2 or argv[1] not in functions:
         print(
