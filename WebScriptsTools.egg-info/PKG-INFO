@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: WebScriptsTools
-Version: 0.0.3
+Version: 0.0.4
 Summary: This package implements tools for WebScripts Scripts.
 Home-page: https://github.com/mauricelambert/WebScriptsTools
 Author: Maurice Lambert
@@ -102,6 +102,32 @@ while log:
 # Get the user to check permission or get informations like ID or name
 user = get_user()
 print(f"You are named '{user['name']}' here !")
+
+class ClassModule:
+    @module2to3
+    def method(
+        self,
+        environ,
+        user,
+        configuration,
+        filename,
+        commande,
+        inputs,
+        csrf_token: str = None,
+    ) -> Tuple[str, Dict[str, str], bytes]:
+        return "200 OK", {}, b'data'
+
+@module2to3
+def function(
+    environ,
+    user,
+    configuration,
+    filename,
+    commande,
+    inputs,
+    csrf_token: str = None,
+) -> Tuple[str, Dict[str, str], bytes]:
+    return "200 OK", {}, b'data'
 ```
 
 ## Links

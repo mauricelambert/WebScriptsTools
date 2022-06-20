@@ -23,7 +23,7 @@
 This package implements tools for WebScripts Scripts.
 """
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -49,20 +49,22 @@ __all__ = [
     "get_upload_script",
     "set_excepthook",
     "get_log_file",
+    "module2to3",
     "get_user",
     "main",
 ]
 
 from importlib.util import spec_from_file_location, module_from_spec
+from types import ModuleType, MethodType, FunctionType
 from os.path import join, splitext, basename
 from contextlib import redirect_stdout
 from collections.abc import Callable
+from typing import Dict, Union, Any
 from sys import exit, stderr, argv
 from os import environ, makedirs
 from types import TracebackType
-from types import ModuleType
+from functools import wraps
 from sys import excepthook  # save default excepthook function
-from typing import Dict
 from json import loads
 import sys
 
@@ -185,6 +187,60 @@ def get_upload_script() -> None:
             "upload_file.py",
         )
     )
+
+
+def module2to3(callable_: Union[FunctionType, MethodType]) -> FunctionType:
+
+    """
+    This decorator make compatibility between the module
+    functions of version 2 and version 3 of WebScripts.
+    """
+
+    @wraps(callable_)
+    def function(*args, **kwargs) -> Any:
+
+        """
+        This decorator make compatibility between the module
+        functions of version 2 and version 3 of WebScripts.
+        """
+
+        environ, user, server, filename, command, inputs = args
+        return callable_(
+            environ,
+            user,
+            server.configuration,
+            filename,
+            command,
+            inputs,
+            **kwargs,
+        )
+
+    @wraps(callable_)
+    def method(*args, **kwargs) -> Any:
+
+        """
+        This decorator make compatibility between the module
+        functions of version 2 and version 3 of WebScripts.
+        """
+
+        self, environ, user, server, filename, command, inputs = args
+        return callable_(
+            self,
+            environ,
+            user,
+            server.configuration,
+            filename,
+            command,
+            inputs,
+            **kwargs,
+        )
+
+    arg_length = callable_.__code__.co_argcount
+
+    if arg_length == 7:
+        return function
+    elif arg_length == 8:
+        return method
 
 
 def main() -> int:
