@@ -23,7 +23,7 @@
 This package implements tools for WebScripts Scripts.
 """
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -114,7 +114,7 @@ def get_log_file() -> str:
     category = environ_get("category", "nocategory")
 
     directory = join(logpath, "scripts", category)
-    file = join(f"{splitext(name)[0]}.log")
+    file = join(directory, f"{splitext(name)[0]}.log")
 
     makedirs(directory, exist_ok=True)
 
