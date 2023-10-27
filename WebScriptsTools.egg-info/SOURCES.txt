@@ -3,6 +3,7 @@ MANIFEST.in
 README.md
 WebScriptsTools.py
 build_config.py
+setup.cfg
 setup.py
 test.py
 WebScriptsTools.egg-info/PKG-INFO

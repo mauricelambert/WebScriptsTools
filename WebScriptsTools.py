@@ -3,7 +3,7 @@
 
 ###################
 #    This package implements tools for WebScripts Scripts
-#    Copyright (C) 2022  Maurice Lambert
+#    Copyright (C) 2022, 2023  Maurice Lambert
 
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 This package implements tools for WebScripts Scripts.
 """
 
-__version__ = "0.0.5"
+__version__ = "0.1.0"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -35,7 +35,7 @@ license = "GPL-3.0 License"
 __url__ = "https://github.com/mauricelambert/WebScriptsTools"
 
 copyright = """
-WebScriptsTools  Copyright (C) 2022  Maurice Lambert
+WebScriptsTools  Copyright (C) 2022, 2023  Maurice Lambert
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it
 under certain conditions.
@@ -63,9 +63,10 @@ from typing import Dict, Union, Any
 from sys import exit, stderr, argv
 from os import environ, makedirs
 from types import TracebackType
+from json import loads, dumps
 from functools import wraps
 from sys import excepthook  # save default excepthook function
-from json import loads
+from typing import List
 import sys
 
 
@@ -73,7 +74,6 @@ environ_get: Callable = environ.get
 
 
 def get_upload_module() -> ModuleType:
-
     """
     This function returns the WebScripts upload module.
     """
@@ -93,23 +93,21 @@ def get_upload_module() -> ModuleType:
 
 
 def get_webscripts_data_path() -> str:
-
     """
     This function returns the path to the data directory.
     """
 
-    return join(environ_get("WEBSCRIPTS_PATH"), "data")
+    return environ["WEBSCRIPTS_DATA_PATH"]
 
 
 def get_log_file() -> str:
-
     """
     This function returns the log path
     for WebScripts scripts.
     """
 
-    logpath = environ_get("LOG_PATH")
-    script = loads(environ_get("SCRIPT_CONFIG"))
+    logpath = environ["WEBSCRIPTS_LOGS_PATH"].split("|", 1)[0]
+    script = loads(environ["SCRIPT_CONFIG"])
     name = script.get("name")
     category = environ_get("category", "nocategory")
 
@@ -121,8 +119,43 @@ def get_log_file() -> str:
     return file
 
 
-def get_user() -> Dict[str, str]:
+def get_log_files() -> str:
+    """
+    This function returns the log files paths
+    used by WebScripts.
+    """
 
+    return environ["WEBSCRIPTS_LOGS_FILES"].split("|")
+
+
+def get_log_directories() -> List[str]:
+    """
+    This function returns the log directories
+    used by WebScripts.
+    """
+
+    return environ["WEBSCRIPTS_LOGS_PATH"].split("|")
+
+
+def get_documentation_directories() -> List[str]:
+    """
+    This function returns the documentation directories
+    used by WebScripts.
+    """
+
+    return environ["WEBSCRIPTS_DOCUMENTATION_PATH"].split(":")
+
+
+def get_webscripts_modules() -> List[str]:
+    """
+    This function returns the modules files paths
+    used by WebScripts.
+    """
+
+    return environ["WEBSCRIPTS_MODULES"].split(":")
+
+
+def get_user() -> Dict[str, str]:
     """
     This function returns the WebScripts user.
     """
@@ -133,7 +166,6 @@ def get_user() -> Dict[str, str]:
 def print_exception(
     exception_class: type, exception: Exception, traceback: TracebackType
 ) -> None:
-
     """
     This function prints exception and exit without prints sensible
     informations about the system and the code (file path, code, ect...).
@@ -164,7 +196,6 @@ def print_exception(
 
 
 def set_excepthook() -> None:
-
     """
     This function sets sys.excepthook to secure
     sensible informations on python errors.
@@ -173,24 +204,20 @@ def set_excepthook() -> None:
     sys.excepthook = print_exception
 
 
-def get_upload_script() -> None:
-
+def get_upload_script() -> str:
     """
     This function prints the upload script path.
     """
 
-    print(
-        join(
-            environ_get("WEBSCRIPTS_PATH"),
-            "scripts",
-            "uploads",
-            "upload_file.py",
-        )
+    return join(
+        environ_get("WEBSCRIPTS_PATH"),
+        "scripts",
+        "uploads",
+        "upload_file.py",
     )
 
 
 def module2to3(callable_: Union[FunctionType, MethodType]) -> FunctionType:
-
     """
     This decorator make compatibility between the module
     functions of version 2 and version 3 of WebScripts.
@@ -198,7 +225,6 @@ def module2to3(callable_: Union[FunctionType, MethodType]) -> FunctionType:
 
     @wraps(callable_)
     def function(*args, **kwargs) -> Any:
-
         """
         This decorator make compatibility between the module
         functions of version 2 and version 3 of WebScripts.
@@ -217,7 +243,6 @@ def module2to3(callable_: Union[FunctionType, MethodType]) -> FunctionType:
 
     @wraps(callable_)
     def method(*args, **kwargs) -> Any:
-
         """
         This decorator make compatibility between the module
         functions of version 2 and version 3 of WebScripts.
@@ -244,7 +269,6 @@ def module2to3(callable_: Union[FunctionType, MethodType]) -> FunctionType:
 
 
 def main() -> int:
-
     """
     This function execute scripts
     tools from the command line.
@@ -252,8 +276,12 @@ def main() -> int:
 
     functions = (
         "get_log_file",
-        "get_webscripts_data_path",
+        "get_log_files",
         "get_upload_script",
+        "get_log_directories",
+        "get_webscripts_modules",
+        "get_webscripts_data_path",
+        "get_documentation_directories",
     )
 
     if len(argv) != 2 or argv[1] not in functions:
@@ -263,7 +291,11 @@ def main() -> int:
         )
         return 1
 
-    print(globals()[argv[1]]())
+    data = globals()[argv[1]]()
+    if isinstance(data, list):
+        data = dumps(data)
+
+    print(data)
     return 0
 
 
